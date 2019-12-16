@@ -84,6 +84,12 @@
  <Reference Include="UnityEditor.UI">
  <HintPath>C:/Users/johnn/Desktop/TNM084 projekt/TNM084/underwaterEnvironment/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
  </Reference>
+ <Reference Include="Unity.Mathematics">
+ <HintPath>C:/Users/johnn/Desktop/TNM084 projekt/TNM084/underwaterEnvironment/Library/ScriptAssemblies/Unity.Mathematics.dll</HintPath>
+ </Reference>
+ <Reference Include="Unity.Mathematics.Editor">
+ <HintPath>C:/Users/johnn/Desktop/TNM084 projekt/TNM084/underwaterEnvironment/Library/ScriptAssemblies/Unity.Mathematics.Editor.dll</HintPath>
+ </Reference>
  <Reference Include="UnityEngine.AIModule">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2019.2.9f1/Editor/Data/Managed/UnityEngine/UnityEngine.AIModule.dll</HintPath>
  </Reference>
