@@ -2,7 +2,7 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/master/Unity.gitignore
 #
-/underwaterEnvironment/[Ll]ibrary/
+/underwaterEnvironment/Library/
 underwaterEnvironment/[Tt]emp/
 underwaterEnvironment/[Oo]bj/
 underwaterEnvironment/[Bb]uild/
