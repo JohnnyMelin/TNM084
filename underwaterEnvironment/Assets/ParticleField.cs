@@ -53,7 +53,7 @@ public class ParticleField : MonoBehaviour
             Vector3 pos = m_particle[i].position;   // get the position of the individual particle
             Vector3 fieldPos = curlNoise(new float3(pos.x + Time.realtimeSinceStartup, pos.y, pos.z) * _waterTurbulence); // get the flowfield
             Vector3 endPos = pos + (Vector3)math.normalize(fieldPos); // calculate the new direction for the particle based on the flowfield
-            m_particle[i].velocity += (endPos - pos) * m_drift; // apply the direction to the particle
+            m_particle[i].velocity = (endPos - pos) * m_drift; // apply the direction to the particle
         }
 
         // Apply the particle changes to the Particle System
