@@ -10,13 +10,13 @@ public class ParticleField : MonoBehaviour
     public float _particleFlow;
     public float _waterTurbulence;
     public Vector3 _offset, _offsetSpeed;
-    
+
     public ParticleSystem particle_system;
     ParticleSystem.Particle[] m_particle;
     public float m_drift;
 
     public bool ShowFlowField;
-
+    
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +27,7 @@ public class ParticleField : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //particleFieldPosition();
         updateParticles();
         //int particlesAlive = particle_system.GetParticles(m_particle);
         //_fastNoise = new FastNoise();
@@ -43,17 +44,35 @@ public class ParticleField : MonoBehaviour
         //particle_system.SetParticles(m_particle, particlesAlive);
     }
 
+    void particleFieldPosition()
+    {
+        particle_system.transform.position = new Vector3(this.transform.position.x + _gridSize.x * 0.5f,
+                                                         this.transform.position.y + _gridSize.y * 0.5f,
+                                                         this.transform.position.z + _gridSize.z * 0.5f);
+    }
+
     void updateParticles()
     {
+        var b = new Bounds(particle_system.transform.position, new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) * 2); // generate a boundary check
         int particlesAlive = particle_system.GetParticles(m_particle);
         _fastNoise = new FastNoise();
-
         for (int i = 0; i < particlesAlive; i++)
         {
-            Vector3 pos = m_particle[i].position;   // get the position of the individual particle
-            Vector3 fieldPos = curlNoise(new float3(pos.x + Time.realtimeSinceStartup, pos.y, pos.z) * _waterTurbulence); // get the flowfield
-            Vector3 endPos = pos + (Vector3)math.normalize(fieldPos); // calculate the new direction for the particle based on the flowfield
-            m_particle[i].velocity = (endPos - pos) * m_drift; // apply the direction to the particle
+            if (Mathf.Abs(m_particle[i].position.x - transform.position.x) > _gridSize.x || Mathf.Abs(m_particle[i].position.y - transform.position.y) > _gridSize.y || Mathf.Abs(m_particle[i].position.z - transform.position.z) > _gridSize.z)
+            {
+                //m_particle[i].remainingLifetime = 0.0f;
+                //m_particle[i].lifetime = 0;
+                m_particle[i].color = Color.red;
+
+
+            }
+            else
+            {
+                Vector3 pos = m_particle[i].position;   // get the position of the individual particle
+                Vector3 fieldPos = curlNoise(new float3(pos.x + Time.realtimeSinceStartup, pos.y, pos.z) * _waterTurbulence); // get the flowfield
+                Vector3 endPos = pos + (Vector3)math.normalize(fieldPos); // calculate the new direction for the particle based on the flowfield
+                m_particle[i].velocity = (endPos - pos) * m_drift; // apply the direction to the particle
+            }
         }
 
         // Apply the particle changes to the Particle System

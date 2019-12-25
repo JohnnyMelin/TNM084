@@ -57,6 +57,7 @@
   <ItemGroup>
      <Compile Include="Assets\FastNoise.cs" />
      <Compile Include="Assets\ParticleField.cs" />
+     <Compile Include="Assets\particleKillers.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/johnn/Desktop/TNM084 projekt/TNM084/underwaterEnvironment/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
