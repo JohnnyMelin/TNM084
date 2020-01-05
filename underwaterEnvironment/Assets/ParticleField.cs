@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Mathematics;
+
+[RequireComponent( typeof(ParticleSystem))]
 public class ParticleField : MonoBehaviour
 {
     FastNoise _fastNoise;
@@ -11,17 +13,20 @@ public class ParticleField : MonoBehaviour
     public float _waterTurbulence;
     public Vector3 _offset, _offsetSpeed;
 
-    public ParticleSystem particle_system;
-    ParticleSystem.Particle[] m_particle;
-    public float m_drift;
+    public ParticleSystem particle_system;  // given particle system    
+    ParticleSystem.Particle[] m_particle;   // array of particles in the system
+    [Range(0.0f,1.0f)]
+    public float m_drift;   // the influence of the flow field [0 , 1].
 
-    public bool ShowFlowField;
-    
+    public bool ShowFlowField;  // illustrate the flowfield by using ondraw gizmos
+    public int numParticles;  // the number of particles surrounding the player
+
 
     // Start is called before the first frame update
     void Start()
     {
         InitializeIfNeeded();
+        spawnParticles();
     }
 
     // Update is called once per frame
@@ -29,6 +34,8 @@ public class ParticleField : MonoBehaviour
     {
         //particleFieldPosition();
         updateParticles();
+        Debug.Log("particle_system position" + particle_system.transform.position);
+        Debug.Log("Transform position" + transform.position);
         //int particlesAlive = particle_system.GetParticles(m_particle);
         //_fastNoise = new FastNoise();
         
@@ -44,39 +51,71 @@ public class ParticleField : MonoBehaviour
         //particle_system.SetParticles(m_particle, particlesAlive);
     }
 
-    void particleFieldPosition()
-    {
-        particle_system.transform.position = new Vector3(this.transform.position.x + _gridSize.x * 0.5f,
-                                                         this.transform.position.y + _gridSize.y * 0.5f,
-                                                         this.transform.position.z + _gridSize.z * 0.5f);
-    }
+    //void particleFieldPosition()
+    //{
+    //    //var emitparam = new ParticleSystem.EmitParams();
+    //    //emitparam.position = transform.position;
+    //    //particle_system.Emit(emitparam,1);  
+    //}
 
     void updateParticles()
     {
-        var b = new Bounds(particle_system.transform.position, new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) * 2); // generate a boundary check
+        //var b = new Bounds(particle_system.transform.position, new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) * 2); // generate a boundary check
         int particlesAlive = particle_system.GetParticles(m_particle);
+        Debug.Log("particles Alive: " + particlesAlive);
+        float dist;
         _fastNoise = new FastNoise();
         for (int i = 0; i < particlesAlive; i++)
         {
-            if (Mathf.Abs(m_particle[i].position.x - transform.position.x) > _gridSize.x || Mathf.Abs(m_particle[i].position.y - transform.position.y) > _gridSize.y || Mathf.Abs(m_particle[i].position.z - transform.position.z) > _gridSize.z)
+            //if (Mathf.Abs(m_particle[i].position.x - transform.position.x) > _gridSize.x || Mathf.Abs(m_particle[i].position.y - transform.position.y) > _gridSize.y || Mathf.Abs(m_particle[i].position.z - transform.position.z) > _gridSize.z)
+            dist = Vector3.Distance(m_particle[i].position, transform.position);
+            if (dist  > _gridSize.x)
             {
                 //m_particle[i].remainingLifetime = 0.0f;
-                //m_particle[i].lifetime = 0;
-                m_particle[i].color = Color.red;
-
-
+                m_particle[i].lifetime = 0;
+                //m_particle[i].color = Color.red;
             }
             else
             {
                 Vector3 pos = m_particle[i].position;   // get the position of the individual particle
                 Vector3 fieldPos = curlNoise(new float3(pos.x + Time.realtimeSinceStartup, pos.y, pos.z) * _waterTurbulence); // get the flowfield
                 Vector3 endPos = pos + (Vector3)math.normalize(fieldPos); // calculate the new direction for the particle based on the flowfield
-                m_particle[i].velocity = (endPos - pos) * m_drift; // apply the direction to the particle
+                //m_particle[i].color = new Color(255, 255, 255, _gridSize.x / dist);
+                m_particle[i].velocity = m_drift * m_particle[i].velocity + (endPos - pos) * (1 - m_drift); // apply the direction to the particle
             }
         }
 
         // Apply the particle changes to the Particle System
         particle_system.SetParticles(m_particle, particlesAlive);
+
+        //if we have less than a set number of particles emit until we are at that number.
+        if (particlesAlive < numParticles)
+        {
+            birthParticles(particlesAlive, numParticles);
+        }
+
+    }
+
+    void spawnParticles()
+    {
+        var emitparam = new ParticleSystem.EmitParams();
+        emitparam.position = transform.position + new Vector3(UnityEngine.Random.Range(-_gridSize.x * 0.5f, _gridSize.x * 0.5f),
+                                                              UnityEngine.Random.Range(-_gridSize.y * 0.5f, _gridSize.y * 0.5f),
+                                                              UnityEngine.Random.Range(-_gridSize.z * 0.5f, _gridSize.z * 0.5f));
+        particle_system.Emit(emitparam, 1);
+
+    }
+
+    void birthParticles(int start, int goal)
+    {
+        for (int i = start; i < goal; start++)
+        {
+            //var emitparam = new ParticleSystem.EmitParams();
+            //emitparam.position = transform.position + new Vector3(UnityEngine.Random.Range(-_gridSize.x * 0.5f, _gridSize.x * 0.5f),
+                                                                  //UnityEngine.Random.Range(-_gridSize.y * 0.5f, _gridSize.y * 0.5f),
+                                                                  //UnityEngine.Random.Range(-_gridSize.z * 0.5f, _gridSize.z * 0.5f));
+            particle_system.Emit(1);
+        }
     }
 
     private float3 curlNoise(float3 p)
@@ -109,7 +148,8 @@ public class ParticleField : MonoBehaviour
         if (m_particle == null || m_particle.Length < particle_system.main.maxParticles)
             m_particle = new ParticleSystem.Particle[particle_system.main.maxParticles];
     }
-    private void OnDrawGizmos()
+
+private void OnDrawGizmos()
     {
         if (ShowFlowField)
         {
