@@ -26,14 +26,15 @@ public class ParticleField : MonoBehaviour
     void Start()
     {
         InitializeIfNeeded();
-        spawnParticles();
     }
 
     // Update is called once per frame
     void Update()
     {
         //particleFieldPosition();
+        spawnParticles();
         updateParticles();
+
         Debug.Log("particle_system position" + particle_system.transform.position);
         Debug.Log("Transform position" + transform.position);
         //int particlesAlive = particle_system.GetParticles(m_particle);
@@ -62,13 +63,15 @@ public class ParticleField : MonoBehaviour
     {
         //var b = new Bounds(particle_system.transform.position, new Vector3(_gridSize.x, _gridSize.y, _gridSize.z) * 2); // generate a boundary check
         int particlesAlive = particle_system.GetParticles(m_particle);
-        Debug.Log("particles Alive: " + particlesAlive);
+        //Debug.Log("particles Alive: " + particlesAlive);
+        //Debug.Log("PS Position:" + particle_system.transform.position);
+        //Debug.Log("PS params" + particle_system.EmitParams());
         float dist;
         _fastNoise = new FastNoise();
         for (int i = 0; i < particlesAlive; i++)
         {
             //if (Mathf.Abs(m_particle[i].position.x - transform.position.x) > _gridSize.x || Mathf.Abs(m_particle[i].position.y - transform.position.y) > _gridSize.y || Mathf.Abs(m_particle[i].position.z - transform.position.z) > _gridSize.z)
-            dist = Vector3.Distance(m_particle[i].position, transform.position);
+            dist = Vector3.Distance(m_particle[i].position, particle_system.transform.position);
             if (dist  > _gridSize.x)
             {
                 //m_particle[i].remainingLifetime = 0.0f;
@@ -99,7 +102,7 @@ public class ParticleField : MonoBehaviour
     void spawnParticles()
     {
         var emitparam = new ParticleSystem.EmitParams();
-        emitparam.position = transform.position + new Vector3(UnityEngine.Random.Range(-_gridSize.x * 0.5f, _gridSize.x * 0.5f),
+        emitparam.position = particle_system.transform.position + new Vector3(UnityEngine.Random.Range(-_gridSize.x * 0.5f, _gridSize.x * 0.5f),
                                                               UnityEngine.Random.Range(-_gridSize.y * 0.5f, _gridSize.y * 0.5f),
                                                               UnityEngine.Random.Range(-_gridSize.z * 0.5f, _gridSize.z * 0.5f));
         particle_system.Emit(emitparam, 1);
